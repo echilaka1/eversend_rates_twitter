@@ -14,6 +14,7 @@ const T = new Twit({
   consumer_secret: process.env.CONSUMER_SECRET, // client secret from twitter
   access_token: process.env.ACCESS_TOKEN, // access token from twitter
   access_token_secret: process.env.ACCESS_TOKEN_SECRET, // access token secret from twitter
+  timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests. 60 seconds
 });
 
 const flagEmoji = {
@@ -63,13 +64,11 @@ const tweetExchangeRates = async (rateFunction) => {
       flagEmoji[quotation?.destCurrency]
     } ${quotation?.destCurrency} ${quotation?.destAmount.toFixed(4)}`;
 
-  console.log(tweetText, "tweetText");
-
   T.post("statuses/update", { status: tweetText }, (err, data, response) => {
     if (err) {
       console.error("Error posting tweet:", err);
     } else {
-      console.log("Tweet posted:", data.text);
+      console.log("Tweet posted:", tweetText);
     }
   });
 };
