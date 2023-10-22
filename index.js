@@ -1,20 +1,24 @@
-const Twit = require("twit");
-// const cron = require("node-cron");
+const { TwitterApi } = require("twitter-api-v2");
 const dotenv = require("dotenv");
+const express = require('express')
+const app = express()
+const port = process.env.PORT || 4000;
 dotenv.config();
-// Eversend API credentials
+
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`)
+})
+
 const eversendClient = require("@eversend/node-sdk")({
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
 });
 
-// Twitter API credentials
-const T = new Twit({
-  consumer_key: process.env.CONSUMER_KEY, //client id from twitter, this is when you grant read and write permissions
-  consumer_secret: process.env.CONSUMER_SECRET, // client secret from twitter
-  access_token: process.env.ACCESS_TOKEN, // access token from twitter
-  access_token_secret: process.env.ACCESS_TOKEN_SECRET, // access token secret from twitter
-  timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests. 60 seconds
+const client = new TwitterApi({
+  appKey: process.env.CONSUMER_KEY,
+  appSecret: process.env.CONSUMER_SECRET,
+  accessToken: process.env.ACCESS_TOKEN,
+  accessSecret: process.env.ACCESS_TOKEN_SECRET,
 });
 
 const flagEmoji = {
@@ -46,7 +50,6 @@ const getExchangeRatesKEStoNGN = async () => {
       to: "NGN",
       amount: 1,
     });
-    console.log(exchangeRate.quotation, "response");
     const { quotation } = exchangeRate;
     return quotation; // Return the quotation data
     // Do something with the quotation data
@@ -55,30 +58,198 @@ const getExchangeRatesKEStoNGN = async () => {
   }
 };
 
-// Function to tweet exchange rates
-const tweetExchangeRates = async (rateFunction) => {
-  const quotation = await rateFunction();
-  const tweetText =
-    `${formatDateTime()}\n` +
-    ` 1 ${flagEmoji[quotation?.baseCurrency]} ${quotation?.baseCurrency} 🔄 ${
-      flagEmoji[quotation?.destCurrency]
-    } ${quotation?.destCurrency} ${quotation?.destAmount.toFixed(4)}`;
-
-  T.post("statuses/update", { status: tweetText }, (err, data, response) => {
-    if (err) {
-      console.error("Error posting tweet:", err);
-    } else {
-      console.log("Tweet posted:", tweetText);
-    }
-  });
+const getExchangeRatesKEStoGHS = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "KES",
+      to: "GHS",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
 };
 
-// Schedule the bot to tweet at your desired interval
-//setInterval(tweetExchangeRates, 24 * 60 * 60 * 1000); // 24 hours
+const getExchangeRatesKEStoUGX = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "KES",
+      to: "UGX",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
 
-// Initial tweet on bot activation
-tweetExchangeRates(getExchangeRatesKEStoNGN);
+const getExchangeRatesNGNtoKES = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "NGN",
+      to: "KES",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
 
-// cron.schedule("0 9,17 * * *", () => {
-//   tweetExchangeRates(getExchangeRatesKEStoNGN);
-// });
+const getExchangeRatesNGNtoGHS = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "NGN",
+      to: "GHS",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
+
+const getExchangeRatesNGNtoUGX = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "NGN",
+      to: "UGX",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
+
+const getExchangeRatesUGXtoKES = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "UGX",
+      to: "KES",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
+
+const getExchangeRatesUGXtoGHS = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "UGX",
+      to: "GHS",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
+
+const getExchangeRatesUGXtoNGN = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "UGX",
+      to: "NGN",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
+
+const getExchangeRatesGHStoNGN = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "GHS",
+      to: "NGN",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
+
+const getExchangeRatesGHStoKES = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "GHS",
+      to: "KES",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
+
+const getExchangeRatesGHStoUGX = async () => {
+  try {
+    const exchangeRate = await eversendClient.exchanges.getQuotation({
+      from: "GHS",
+      to: "UGX",
+      amount: 1,
+    });
+    const { quotation } = exchangeRate;
+    return quotation; // Return the quotation data
+    // Do something with the quotation data
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+  }
+};
+
+const tweet = async (rateFunction) => {
+  const quotation = await rateFunction();
+  console.log(quotation, 'quotation error now');
+  const tweetText =
+    `${formatDateTime()}\n` +
+    ` ${flagEmoji[quotation?.baseCurrency]} 1 ${quotation?.baseCurrency} 🔄 ${
+      flagEmoji[quotation?.destCurrency]
+    } ${quotation?.destCurrency} ${quotation?.destAmount.toFixed(4)}`;
+  try {
+    await client.v2.tweet(tweetText);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+tweet(getExchangeRatesKEStoNGN);
+tweet(getExchangeRatesKEStoGHS);
+tweet(getExchangeRatesKEStoUGX);
+
+tweet(getExchangeRatesNGNtoKES);
+tweet(getExchangeRatesNGNtoGHS);
+tweet(getExchangeRatesNGNtoUGX);
+
+tweet(getExchangeRatesUGXtoKES);
+tweet(getExchangeRatesUGXtoGHS);
+tweet(getExchangeRatesUGXtoNGN);
+
+tweet(getExchangeRatesGHStoKES);
+tweet(getExchangeRatesGHStoUGX);
+tweet(getExchangeRatesGHStoNGN);
