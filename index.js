@@ -1,13 +1,13 @@
 const { TwitterApi } = require("twitter-api-v2");
 const dotenv = require("dotenv");
 const express = require('express')
-const app = express()
-const port = process.env.PORT || 4000;
+// const app = express()
+const port = process.env.PORT || 5000;
 dotenv.config();
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
-})
+// app.listen(port, () => {
+//   console.log(`Listening on port ${port}`)
+// })
 
 const eversendClient = require("@eversend/node-sdk")({
   clientId: process.env.CLIENT_ID,
@@ -20,6 +20,7 @@ const client = new TwitterApi({
   accessToken: process.env.ACCESS_TOKEN,
   accessSecret: process.env.ACCESS_TOKEN_SECRET,
 });
+
 
 const flagEmoji = {
   KES: "🇰🇪", // Kenya
@@ -228,7 +229,7 @@ const tweet = async (rateFunction) => {
   console.log(quotation, 'quotation error now');
   const tweetText =
     `${formatDateTime()}\n` +
-    ` ${flagEmoji[quotation?.baseCurrency]} 1 ${quotation?.baseCurrency} 🔄 ${
+    ` ${flagEmoji[quotation?.baseCurrency]} 1 ${quotation?.baseCurrency}  >>>>  ${
       flagEmoji[quotation?.destCurrency]
     } ${quotation?.destCurrency} ${quotation?.destAmount.toFixed(4)}`;
   try {
