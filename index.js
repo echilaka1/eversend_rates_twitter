@@ -1,8 +1,8 @@
 const { TwitterApi } = require("twitter-api-v2");
 const dotenv = require("dotenv");
-const express = require('express')
+// const express = require('express')
 // const app = express()
-const port = process.env.PORT || 5000;
+// const port = process.env.PORT || 5000;
 dotenv.config();
 
 // app.listen(port, () => {
