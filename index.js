@@ -21,7 +21,6 @@ const client = new TwitterApi({
   accessSecret: process.env.ACCESS_TOKEN_SECRET,
 });
 
-
 const flagEmoji = {
   KES: "🇰🇪", // Kenya
   NGN: "🇳🇬", // Nigeria
@@ -44,11 +43,11 @@ function formatDateTime() {
 }
 
 // Function to fetch exchange rate data from Eversend
-const getExchangeRatesKEStoNGN = async () => {
+const getExchangeRate = async (fromCurrency, toCurrency) => {
   try {
     const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "KES",
-      to: "NGN",
+      from: fromCurrency,
+      to: toCurrency,
       amount: 1,
     });
     const { quotation } = exchangeRate;
@@ -59,198 +58,102 @@ const getExchangeRatesKEStoNGN = async () => {
   }
 };
 
-const getExchangeRatesKEStoGHS = async () => {
+const tweetExchangeRates = async () => {
   try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "KES",
-      to: "GHS",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
+    const kestoNGN = await getExchangeRate("KES", "NGN");
+    const kestoGHS = await getExchangeRate("KES", "GHS");
+    const kestoUGX = await getExchangeRate("KES", "UGX");
 
-const getExchangeRatesKEStoUGX = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "KES",
-      to: "UGX",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
+    const tweetText =
+      `${formatDateTime()}\n` +
+      ` ${flagEmoji["KES"]} 1 KES  >>>>  ${
+        flagEmoji["NGN"]
+      } NGN ${kestoNGN.destAmount.toFixed(4)}\n` +
+      ` ${flagEmoji["KES"]} 1 KES  >>>>  ${
+        flagEmoji["GHS"]
+      } GHS ${kestoGHS.destAmount.toFixed(4)}\n` +
+      ` ${flagEmoji["KES"]} 1 KES  >>>>  ${
+        flagEmoji["UGX"]
+      } UGX ${kestoUGX.destAmount.toFixed(4)}`;
 
-const getExchangeRatesNGNtoKES = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "NGN",
-      to: "KES",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const getExchangeRatesNGNtoGHS = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "NGN",
-      to: "GHS",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const getExchangeRatesNGNtoUGX = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "NGN",
-      to: "UGX",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const getExchangeRatesUGXtoKES = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "UGX",
-      to: "KES",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const getExchangeRatesUGXtoGHS = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "UGX",
-      to: "GHS",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const getExchangeRatesUGXtoNGN = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "UGX",
-      to: "NGN",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const getExchangeRatesGHStoNGN = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "GHS",
-      to: "NGN",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const getExchangeRatesGHStoKES = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "GHS",
-      to: "KES",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const getExchangeRatesGHStoUGX = async () => {
-  try {
-    const exchangeRate = await eversendClient.exchanges.getQuotation({
-      from: "GHS",
-      to: "UGX",
-      amount: 1,
-    });
-    const { quotation } = exchangeRate;
-    return quotation; // Return the quotation data
-    // Do something with the quotation data
-  } catch (error) {
-    console.error("Error fetching quotation:", error);
-  }
-};
-
-const tweet = async (rateFunction) => {
-  const quotation = await rateFunction();
-  console.log(quotation, 'quotation error now');
-  const tweetText =
-    `${formatDateTime()}\n` +
-    ` ${flagEmoji[quotation?.baseCurrency]} 1 ${quotation?.baseCurrency}  >>>>  ${
-      flagEmoji[quotation?.destCurrency]
-    } ${quotation?.destCurrency} ${quotation?.destAmount.toFixed(4)}`;
-  try {
     await client.v2.tweet(tweetText);
   } catch (e) {
     console.log(e);
   }
 };
 
-tweet(getExchangeRatesKEStoNGN);
-tweet(getExchangeRatesKEStoGHS);
-tweet(getExchangeRatesKEStoUGX);
+const tweetExchangeRatesTwo = async () => {
+  try {
+    const kestoNGN = await getExchangeRate("NGN", "KES");
+    const kestoGHS = await getExchangeRate("NGN", "GHS");
+    const kestoUGX = await getExchangeRate("NGN", "UGX");
 
-tweet(getExchangeRatesNGNtoKES);
-tweet(getExchangeRatesNGNtoGHS);
-tweet(getExchangeRatesNGNtoUGX);
+    const tweetText =
+      `${formatDateTime()}\n` +
+      ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
+        flagEmoji["KES"]
+      } KES ${kestoNGN.destAmount.toFixed(4)}\n` +
+      ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
+        flagEmoji["GHS"]
+      } GHS ${kestoGHS.destAmount.toFixed(4)}\n` +
+      ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
+        flagEmoji["UGX"]
+      } UGX ${kestoUGX.destAmount.toFixed(4)}`;
 
-tweet(getExchangeRatesUGXtoKES);
-tweet(getExchangeRatesUGXtoGHS);
-tweet(getExchangeRatesUGXtoNGN);
+    await client.v2.tweet(tweetText);
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-tweet(getExchangeRatesGHStoKES);
-tweet(getExchangeRatesGHStoUGX);
-tweet(getExchangeRatesGHStoNGN);
+const tweetExchangeRatesThree = async () => {
+  try {
+    const kestoNGN = await getExchangeRate("UGX", "KES");
+    const kestoGHS = await getExchangeRate("UGX", "GHS");
+    const kestoUGX = await getExchangeRate("UGX", "NGN");
+
+    const tweetText =
+      `${formatDateTime()}\n` +
+      ` ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+        flagEmoji["KES"]
+      } KES ${kestoNGN.destAmount.toFixed(4)}\n` +
+      ` ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+        flagEmoji["GHS"]
+      } GHS ${kestoGHS.destAmount.toFixed(4)}\n` +
+      ` ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+        flagEmoji["NGN"]
+      } NGN ${kestoUGX.destAmount.toFixed(4)}`;
+
+    await client.v2.tweet(tweetText);
+  } catch (e) {
+    console.log(e);
+  }
+};
+const tweetExchangeRatesFour = async () => {
+  try {
+    const kestoNGN = await getExchangeRate("GHS", "KES");
+    const kestoGHS = await getExchangeRate("GHS", "UGX");
+    const kestoUGX = await getExchangeRate("GHS", "NGN");
+
+    const tweetText =
+      `${formatDateTime()}\n` +
+      ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
+        flagEmoji["KES"]
+      } KES ${kestoNGN.destAmount.toFixed(4)}\n` +
+      ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
+        flagEmoji["UGX"]
+      } UGX ${kestoGHS.destAmount.toFixed(4)}\n` +
+      ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
+        flagEmoji["NGN"]
+      } NGN ${kestoUGX.destAmount.toFixed(4)}`;
+
+    await client.v2.tweet(tweetText);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+tweetExchangeRates();
+tweetExchangeRatesTwo();
+tweetExchangeRatesThree();
+tweetExchangeRatesFour();
