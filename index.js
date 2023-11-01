@@ -153,7 +153,22 @@ const tweetExchangeRatesFour = async () => {
   }
 };
 
-tweetExchangeRates();
-tweetExchangeRatesTwo();
-tweetExchangeRatesThree();
-tweetExchangeRatesFour();
+(async () => {
+  try {
+    const promises = [
+      tweetExchangeRates(),
+      tweetExchangeRatesTwo(),
+      tweetExchangeRatesThree(),
+      tweetExchangeRatesFour(),
+    ];
+
+    await Promise.all(promises);
+  } catch (error) {
+    console.log(error);
+  }
+})();
+
+// tweetExchangeRates();
+// tweetExchangeRatesTwo();
+// tweetExchangeRatesThree();
+// tweetExchangeRatesFour();
