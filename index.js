@@ -167,8 +167,3 @@ const tweetExchangeRatesFour = async () => {
     console.log(error);
   }
 })();
-
-// tweetExchangeRates();
-// tweetExchangeRatesTwo();
-// tweetExchangeRatesThree();
-// tweetExchangeRatesFour();
