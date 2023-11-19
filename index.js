@@ -58,11 +58,13 @@ const getExchangeRate = async (fromCurrency, toCurrency) => {
   }
 };
 
-const tweetExchangeRates = async () => {
+const tweetExchangeRatesKES = async () => {
   try {
-    const kestoNGN = await getExchangeRate("KES", "NGN");
-    const kestoGHS = await getExchangeRate("KES", "GHS");
-    const kestoUGX = await getExchangeRate("KES", "UGX");
+    const [kestoNGN, kestoGHS, kestoUGX] = await Promise.all([
+      getExchangeRate("KES", "NGN"),
+      getExchangeRate("KES", "GHS"),
+      getExchangeRate("KES", "UGX"),
+    ]);
 
     const tweetText =
       `${formatDateTime()}\n` +
@@ -82,23 +84,25 @@ const tweetExchangeRates = async () => {
   }
 };
 
-const tweetExchangeRatesTwo = async () => {
+const tweetExchangeRatesNGN = async () => {
   try {
-    const kestoNGN = await getExchangeRate("NGN", "KES");
-    const kestoGHS = await getExchangeRate("NGN", "GHS");
-    const kestoUGX = await getExchangeRate("NGN", "UGX");
+    const [NgntoKES, NgntoGHS, NgntoUGX] = await Promise.all([
+      getExchangeRate("NGN", "KES"),
+      getExchangeRate("NGN", "GHS"),
+      getExchangeRate("NGN", "UGX"),
+    ]);
 
     const tweetText =
       `${formatDateTime()}\n` +
       ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
         flagEmoji["KES"]
-      } KES ${kestoNGN.destAmount.toFixed(4)}\n` +
+      } KES ${NgntoKES.destAmount.toFixed(4)}\n` +
       ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
         flagEmoji["GHS"]
-      } GHS ${kestoGHS.destAmount.toFixed(4)}\n` +
+      } GHS ${NgntoGHS.destAmount.toFixed(4)}\n` +
       ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
         flagEmoji["UGX"]
-      } UGX ${kestoUGX.destAmount.toFixed(4)}`;
+      } UGX ${NgntoUGX.destAmount.toFixed(4)}`;
 
     await client.v2.tweet(tweetText);
   } catch (e) {
@@ -106,46 +110,51 @@ const tweetExchangeRatesTwo = async () => {
   }
 };
 
-const tweetExchangeRatesThree = async () => {
+const tweetExchangeRatesUGX = async () => {
   try {
-    const kestoNGN = await getExchangeRate("UGX", "KES");
-    const kestoGHS = await getExchangeRate("UGX", "GHS");
-    const kestoUGX = await getExchangeRate("UGX", "NGN");
+    const [UgxtoKES, UgxtoGHS, UgxtoNGN] = await Promise.all([
+      getExchangeRate("UGX", "KES"),
+      getExchangeRate("UGX", "GHS"),
+      getExchangeRate("UGX", "NGN"),
+    ]);
 
-    const tweetText =
-      `${formatDateTime()}\n` +
-      ` ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-        flagEmoji["KES"]
-      } KES ${kestoNGN.destAmount.toFixed(4)}\n` +
-      ` ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-        flagEmoji["GHS"]
-      } GHS ${kestoGHS.destAmount.toFixed(4)}\n` +
-      ` ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-        flagEmoji["NGN"]
-      } NGN ${kestoUGX.destAmount.toFixed(4)}`;
+    const tweetText = `
+      ${formatDateTime()}
+      ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+      flagEmoji["KES"]
+    } KES ${UgxtoKES.destAmount.toFixed(4)}
+      ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+      flagEmoji["GHS"]
+    } GHS ${UgxtoGHS.destAmount.toFixed(4)}
+      ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+      flagEmoji["NGN"]
+    } NGN ${UgxtoNGN.destAmount.toFixed(4)}`;
 
     await client.v2.tweet(tweetText);
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 };
-const tweetExchangeRatesFour = async () => {
+
+const tweetExchangeRatesGHS = async () => {
   try {
-    const kestoNGN = await getExchangeRate("GHS", "KES");
-    const kestoGHS = await getExchangeRate("GHS", "UGX");
-    const kestoUGX = await getExchangeRate("GHS", "NGN");
+    const [ghstoKES, ghstoUGX, ghstoNGN] = await Promise.all([
+      getExchangeRate("GHS", "KES"),
+      getExchangeRate("GHS", "UGX"),
+      getExchangeRate("GHS", "NGN"),
+    ]);
 
     const tweetText =
       `${formatDateTime()}\n` +
       ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
         flagEmoji["KES"]
-      } KES ${kestoNGN.destAmount.toFixed(4)}\n` +
+      } KES ${ghstoKES.destAmount.toFixed(4)}\n` +
       ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
         flagEmoji["UGX"]
-      } UGX ${kestoGHS.destAmount.toFixed(4)}\n` +
+      } UGX ${ghstoUGX.destAmount.toFixed(4)}\n` +
       ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
         flagEmoji["NGN"]
-      } NGN ${kestoUGX.destAmount.toFixed(4)}`;
+      } NGN ${ghstoNGN.destAmount.toFixed(4)}`;
 
     await client.v2.tweet(tweetText);
   } catch (e) {
@@ -156,10 +165,10 @@ const tweetExchangeRatesFour = async () => {
 (async () => {
   try {
     const promises = [
-      tweetExchangeRates(),
-      tweetExchangeRatesTwo(),
-      tweetExchangeRatesThree(),
-      tweetExchangeRatesFour(),
+      tweetExchangeRatesKES(),
+      tweetExchangeRatesNGN(),
+      tweetExchangeRatesUGX(),
+      tweetExchangeRatesGHS(),
     ];
 
     await Promise.all(promises);
