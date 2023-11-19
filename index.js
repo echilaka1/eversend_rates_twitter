@@ -118,17 +118,17 @@ const tweetExchangeRatesUGX = async () => {
       getExchangeRate("UGX", "NGN"),
     ]);
 
-    const tweetText = `
-      ${formatDateTime()}
+    const tweetText =
+      `${formatDateTime()}\n` +
+      `  ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+        flagEmoji["KES"]
+      } KES ${UgxtoKES.destAmount.toFixed(4)}
       ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-      flagEmoji["KES"]
-    } KES ${UgxtoKES.destAmount.toFixed(4)}
+        flagEmoji["GHS"]
+      } GHS ${UgxtoGHS.destAmount.toFixed(4)}
       ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-      flagEmoji["GHS"]
-    } GHS ${UgxtoGHS.destAmount.toFixed(4)}
-      ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-      flagEmoji["NGN"]
-    } NGN ${UgxtoNGN.destAmount.toFixed(4)}`;
+        flagEmoji["NGN"]
+      } NGN ${UgxtoNGN.destAmount.toFixed(4)}`;
 
     await client.v2.tweet(tweetText);
   } catch (e) {
