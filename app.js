@@ -1,10 +1,18 @@
 const { TwitterApi } = require("twitter-api-v2");
+const dotenv = require("dotenv");
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 5000;
+dotenv.config();
+
+// app.listen(port, () => {
+//   console.log(`Listening on port ${port}`)
+// })
+
 const eversendClient = require("@eversend/node-sdk")({
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
 });
-const dotenv = require("dotenv");
-dotenv.config();
 
 const client = new TwitterApi({
   appKey: process.env.CONSUMER_KEY,
@@ -108,7 +116,23 @@ const tweetExchangeRates = async (baseCurrency, currencyArray) => {
   }
 };
 
-(async () => {
+// (async () => {
+//   try {
+//     const promises = [
+//       tweetExchangeRates("KES", pairsArray),
+//       tweetExchangeRates("NGN", pairsArray),
+//       tweetExchangeRates("UGX", pairsArray),
+//       tweetExchangeRates("GHS", pairsArray),
+//     ];
+
+//     await Promise.all(promises);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// })();
+
+// Endpoint to trigger the exchange rate tweet
+app.get("/trigger-exchange-rate-tweet", async (req, res) => {
   try {
     const promises = [
       tweetExchangeRates("KES", pairsArray),
@@ -118,7 +142,21 @@ const tweetExchangeRates = async (baseCurrency, currencyArray) => {
     ];
 
     await Promise.all(promises);
+
+    res.status(200).send("Exchange rate tweet triggered successfully!");
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).send("Internal Server Error");
   }
-})();
+});
+
+//global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something went wrong!");
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
