@@ -128,11 +128,11 @@ const tweetExchangeRatesUGX = async () => {
       `${formatDateTime()}\n` +
       `  ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
         flagEmoji["KES"]
-      } KES ${UgxtoKES.destAmount.toFixed(4)}
-      ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+      } KES ${UgxtoKES.destAmount.toFixed(4)}\n` +
+      `${flagEmoji["UGX"]} 1 UGX  >>>>  ${
         flagEmoji["GHS"]
-      } GHS ${UgxtoGHS.destAmount.toFixed(4)}
-      ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
+      } GHS ${UgxtoGHS.destAmount.toFixed(4)} \n` +
+      ` ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
         flagEmoji["NGN"]
       } NGN ${UgxtoNGN.destAmount.toFixed(4)}`;
 
@@ -210,9 +210,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something went wrong!");
 });
 
-
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
