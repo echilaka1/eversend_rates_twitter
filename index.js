@@ -1,8 +1,8 @@
 const { TwitterApi } = require("twitter-api-v2");
 const dotenv = require("dotenv");
-const express = require("express");
-const app = express();
-const port = process.env.PORT || 5000;
+// const express = require("express");
+// const app = express();
+// const port = process.env.PORT || 5000;
 dotenv.config();
 
 // app.listen(port, () => {
@@ -21,9 +21,6 @@ const client = new TwitterApi({
   accessSecret: process.env.ACCESS_TOKEN_SECRET,
 });
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
-
 const flagEmoji = {
   KES: "🇰🇪", // Kenya
   NGN: "🇳🇬", // Nigeria
@@ -35,6 +32,8 @@ const flagEmoji = {
   XOF: "🇨🇮", // Ivory Coast
   // Add flag emojis for other currencies as needed
 };
+
+const pairsArray = ["NGN", "GHS", "UGX", "KES"];
 
 // Function to format the date and time
 function formatDateTime() {
@@ -58,210 +57,106 @@ const getExchangeRate = async (fromCurrency, toCurrency) => {
     // Do something with the quotation data
   } catch (error) {
     console.error(
-      `Error fetching quotation for ${fromCurrency} to ${toCurrency}:`,
-      error
+      `Main Exchange Rate Error fetching quotation for ${fromCurrency} to ${toCurrency}:`,
+      error.response.data
     );
     throw error; // Rethrow the error to be caught by the calling function
   }
 };
 
-const tweetExchangeRatesKES = async () => {
-  let retries = 0;
+const tweetExchangeRates = async (baseCurrency, currencyArray) => {
+  let errorOccurred = false;
   try {
-    const [kestoNGN, kestoGHS, kestoUGX] = await Promise.all([
-      getExchangeRate("KES", "NGN"),
-      getExchangeRate("KES", "GHS"),
-      getExchangeRate("KES", "UGX"),
-    ]);
+    // Check if baseCurrency is in currencyArray, remove it if present
+    const index = currencyArray.indexOf(baseCurrency);
+    if (index !== -1) {
+      currencyArray.splice(index, 1);
+    }
+
+    const exchangeRatePromises = currencyArray.map(async (currency) => {
+      try {
+        const rate = await getExchangeRate(baseCurrency, currency);
+        return { currency, rate };
+      } catch (error) {
+        console.error(
+          `Sub Exchange Rate when Tweeting - Error fetching quotation for ${baseCurrency} to ${currency}:`,
+          error.response.data
+        );
+        errorOccurred = true;
+        // Don't rethrow the error to continue processing other promises
+        return null; // Return null for the failed promise
+      }
+    });
+
+    const exchangeRates = await Promise.all(exchangeRatePromises);
+
+    // Check if any errors occurred
+    if (errorOccurred) {
+      console.warn(
+        "Errors occurred during exchange rate fetching. Skipping tweet."
+      );
+      return;
+    }
 
     const tweetText =
       `${formatDateTime()}\n` +
-      ` ${flagEmoji["KES"]} 1 KES  >>>>  ${
-        flagEmoji["NGN"]
-      } NGN ${kestoNGN.destAmount.toFixed(4)}\n` +
-      ` ${flagEmoji["KES"]} 1 KES  >>>>  ${
-        flagEmoji["GHS"]
-      } GHS ${kestoGHS.destAmount.toFixed(4)}\n` +
-      ` ${flagEmoji["KES"]} 1 KES  >>>>  ${
-        flagEmoji["UGX"]
-      } UGX ${kestoUGX.destAmount.toFixed(4)}`;
+      exchangeRates
+        .map(
+          ({ currency, rate }) =>
+            ` ${flagEmoji[baseCurrency]} 1 ${baseCurrency} >>>> ${
+              flagEmoji[currency]
+            } ${currency} ${rate.destAmount.toFixed(4)}`
+        )
+        .join("\n");
 
     await client.v2.tweet(tweetText);
   } catch (error) {
-    console.error(
-      `Error in tweetExchangeRatesKES (attempt ${retries + 1}):`,
-      error
-    );
-    retries++;
-
-    if (retries === MAX_RETRIES) {
-      throw new Error(
-        `Failed after ${MAX_RETRIES} attempts. Last error: ${error.message}`
-      );
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+    console.error(`Error in tweetExchangeRates${baseCurrency}:`, error);
+    throw error; // Rethrow the error to be caught by the calling function or global error handler
   }
 };
 
-const tweetExchangeRatesNGN = async () => {
-  let retries = 0;
-  try {
-    const [NgntoKES, NgntoGHS, NgntoUGX] = await Promise.all([
-      getExchangeRate("NGN", "KES"),
-      getExchangeRate("NGN", "GHS"),
-      getExchangeRate("NGN", "UGX"),
-    ]);
-
-    const tweetText =
-      `${formatDateTime()}\n` +
-      ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
-        flagEmoji["KES"]
-      } KES ${NgntoKES.destAmount.toFixed(4)}\n` +
-      ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
-        flagEmoji["GHS"]
-      } GHS ${NgntoGHS.destAmount.toFixed(4)}\n` +
-      ` ${flagEmoji["NGN"]} 1 NGN  >>>>  ${
-        flagEmoji["UGX"]
-      } UGX ${NgntoUGX.destAmount.toFixed(4)}`;
-
-    await client.v2.tweet(tweetText);
-  } catch (error) {
-    console.error(
-      `Error in tweetExchangeRatesNGN (attempt ${retries + 1}):`,
-      error
-    );
-    retries++;
-
-    if (retries === MAX_RETRIES) {
-      throw new Error(
-        `Failed after ${MAX_RETRIES} attempts. Last error: ${error.message}`
-      );
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-  }
-};
-
-const tweetExchangeRatesUGX = async () => {
-  let retries = 0;
-  try {
-    const [UgxtoKES, UgxtoGHS, UgxtoNGN] = await Promise.all([
-      getExchangeRate("UGX", "KES"),
-      getExchangeRate("UGX", "GHS"),
-      getExchangeRate("UGX", "NGN"),
-    ]);
-
-    const tweetText =
-      `${formatDateTime()}\n` +
-      `  ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-        flagEmoji["KES"]
-      } KES ${UgxtoKES.destAmount.toFixed(4)}\n` +
-      `${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-        flagEmoji["GHS"]
-      } GHS ${UgxtoGHS.destAmount.toFixed(4)} \n` +
-      ` ${flagEmoji["UGX"]} 1 UGX  >>>>  ${
-        flagEmoji["NGN"]
-      } NGN ${UgxtoNGN.destAmount.toFixed(4)}`;
-
-    await client.v2.tweet(tweetText);
-  } catch (error) {
-    console.error(
-      `Error in tweetExchangeRatesUGX (attempt ${retries + 1}):`,
-      error
-    );
-    retries++;
-
-    if (retries === MAX_RETRIES) {
-      throw new Error(
-        `Failed after ${MAX_RETRIES} attempts. Last error: ${error.message}`
-      );
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-  }
-};
-
-const tweetExchangeRatesGHS = async () => {
-  let retries = 0;
-  try {
-    const [ghstoKES, ghstoUGX, ghstoNGN] = await Promise.all([
-      getExchangeRate("GHS", "KES"),
-      getExchangeRate("GHS", "UGX"),
-      getExchangeRate("GHS", "NGN"),
-    ]);
-
-    const tweetText =
-      `${formatDateTime()}\n` +
-      ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
-        flagEmoji["KES"]
-      } KES ${ghstoKES.destAmount.toFixed(4)}\n` +
-      ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
-        flagEmoji["UGX"]
-      } UGX ${ghstoUGX.destAmount.toFixed(4)}\n` +
-      ` ${flagEmoji["GHS"]} 1 GHS  >>>>  ${
-        flagEmoji["NGN"]
-      } NGN ${ghstoNGN.destAmount.toFixed(4)}`;
-
-    await client.v2.tweet(tweetText);
-  } catch (error) {
-    console.error(
-      `Error in tweetExchangeRatesGHS (attempt ${retries + 1}):`,
-      error
-    );
-    retries++;
-
-    if (retries === MAX_RETRIES) {
-      throw new Error(
-        `Failed after ${MAX_RETRIES} attempts. Last error: ${error.message}`
-      );
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-  }
-};
-
-// (async () => {
-//   try {
-//     const promises = [
-//       tweetExchangeRatesKES(),
-//       tweetExchangeRatesNGN(),
-//       tweetExchangeRatesUGX(),
-//       tweetExchangeRatesGHS(),
-//     ];
-
-//     await Promise.all(promises);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// })();
-
-// Endpoint to trigger the exchange rate tweet
-app.get("/trigger-exchange-rate-tweet", async (req, res) => {
+(async () => {
   try {
     const promises = [
-      tweetExchangeRatesKES(),
-      tweetExchangeRatesNGN(),
-      tweetExchangeRatesUGX(),
-      tweetExchangeRatesGHS(),
+      tweetExchangeRates("KES", pairsArray),
+      tweetExchangeRates("NGN", pairsArray),
+      tweetExchangeRates("UGX", pairsArray),
+      tweetExchangeRates("GHS", pairsArray),
     ];
 
     await Promise.all(promises);
-
-    res.status(200).send("Exchange rate tweet triggered successfully!");
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
+    console.log(error);
   }
-});
+})();
 
-//global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something went wrong!");
-});
+// Endpoint to trigger the exchange rate tweet
+// app.get("/trigger-exchange-rate-tweet", async (req, res) => {
+//   try {
+//     const promises = [
+//       tweetExchangeRates("KES", pairsArray),
+//       tweetExchangeRates("NGN", pairsArray),
+//       tweetExchangeRates("UGX", pairsArray),
+//       tweetExchangeRates("GHS", pairsArray),
+//     ];
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+//     await Promise.all(promises);
+
+//     res.status(200).send("Exchange rate tweet triggered successfully!");
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// });
+
+// //global error handler
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   res.status(500).send("Something went wrong!");
+// });
+
+// // Start the server
+// app.listen(port, () => {
+//   console.log(`Server is running on port ${port}`);
+// });
