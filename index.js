@@ -54,7 +54,11 @@ const getExchangeRate = async (fromCurrency, toCurrency) => {
     return quotation; // Return the quotation data
     // Do something with the quotation data
   } catch (error) {
-    console.error("Error fetching quotation:", error);
+    console.error(
+      `Error fetching quotation for ${fromCurrency} to ${toCurrency}:`,
+      error
+    );
+    throw error; // Rethrow the error to be caught by the calling function
   }
 };
 
@@ -79,8 +83,9 @@ const tweetExchangeRatesKES = async () => {
       } UGX ${kestoUGX.destAmount.toFixed(4)}`;
 
     await client.v2.tweet(tweetText);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.error("Error in tweetExchangeRatesKES:", error);
+    throw error; // Rethrow the error to be caught by the calling function or global error handler
   }
 };
 
@@ -105,8 +110,9 @@ const tweetExchangeRatesNGN = async () => {
       } UGX ${NgntoUGX.destAmount.toFixed(4)}`;
 
     await client.v2.tweet(tweetText);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.error("Error in tweetExchangeRatesNGN:", error);
+    throw error; // Rethrow the error to be caught by the calling function or global error handler
   }
 };
 
@@ -131,8 +137,9 @@ const tweetExchangeRatesUGX = async () => {
       } NGN ${UgxtoNGN.destAmount.toFixed(4)}`;
 
     await client.v2.tweet(tweetText);
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error("Error in tweetExchangeRatesUGX:", error);
+    throw error; // Rethrow the error to be caught by the calling function or global error handler
   }
 };
 
@@ -157,8 +164,9 @@ const tweetExchangeRatesGHS = async () => {
       } NGN ${ghstoNGN.destAmount.toFixed(4)}`;
 
     await client.v2.tweet(tweetText);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.error("Error in tweetExchangeRatesGHS:", error);
+    throw error; // Rethrow the error to be caught by the calling function or global error handler
   }
 };
 
@@ -196,7 +204,15 @@ app.get("/trigger-exchange-rate-tweet", async (req, res) => {
   }
 });
 
+//global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something went wrong!");
+});
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
