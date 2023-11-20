@@ -1,8 +1,8 @@
 const { TwitterApi } = require("twitter-api-v2");
 const dotenv = require("dotenv");
-// const express = require('express')
-// const app = express()
-// const port = process.env.PORT || 5000;
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 5000;
 dotenv.config();
 
 // app.listen(port, () => {
@@ -162,7 +162,23 @@ const tweetExchangeRatesGHS = async () => {
   }
 };
 
-(async () => {
+// (async () => {
+//   try {
+//     const promises = [
+//       tweetExchangeRatesKES(),
+//       tweetExchangeRatesNGN(),
+//       tweetExchangeRatesUGX(),
+//       tweetExchangeRatesGHS(),
+//     ];
+
+//     await Promise.all(promises);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// })();
+
+// Endpoint to trigger the exchange rate tweet
+app.get("/trigger-exchange-rate-tweet", async (req, res) => {
   try {
     const promises = [
       tweetExchangeRatesKES(),
@@ -172,7 +188,15 @@ const tweetExchangeRatesGHS = async () => {
     ];
 
     await Promise.all(promises);
+
+    res.status(200).send("Exchange rate tweet triggered successfully!");
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).send("Internal Server Error");
   }
-})();
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
