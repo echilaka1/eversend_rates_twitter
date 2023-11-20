@@ -21,6 +21,9 @@ const client = new TwitterApi({
   accessSecret: process.env.ACCESS_TOKEN_SECRET,
 });
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
 const flagEmoji = {
   KES: "🇰🇪", // Kenya
   NGN: "🇳🇬", // Nigeria
@@ -63,6 +66,7 @@ const getExchangeRate = async (fromCurrency, toCurrency) => {
 };
 
 const tweetExchangeRatesKES = async () => {
+  let retries = 0;
   try {
     const [kestoNGN, kestoGHS, kestoUGX] = await Promise.all([
       getExchangeRate("KES", "NGN"),
@@ -84,12 +88,24 @@ const tweetExchangeRatesKES = async () => {
 
     await client.v2.tweet(tweetText);
   } catch (error) {
-    console.error("Error in tweetExchangeRatesKES:", error);
-    throw error; // Rethrow the error to be caught by the calling function or global error handler
+    console.error(
+      `Error in tweetExchangeRatesKES (attempt ${retries + 1}):`,
+      error
+    );
+    retries++;
+
+    if (retries === MAX_RETRIES) {
+      throw new Error(
+        `Failed after ${MAX_RETRIES} attempts. Last error: ${error.message}`
+      );
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
   }
 };
 
 const tweetExchangeRatesNGN = async () => {
+  let retries = 0;
   try {
     const [NgntoKES, NgntoGHS, NgntoUGX] = await Promise.all([
       getExchangeRate("NGN", "KES"),
@@ -111,12 +127,24 @@ const tweetExchangeRatesNGN = async () => {
 
     await client.v2.tweet(tweetText);
   } catch (error) {
-    console.error("Error in tweetExchangeRatesNGN:", error);
-    throw error; // Rethrow the error to be caught by the calling function or global error handler
+    console.error(
+      `Error in tweetExchangeRatesNGN (attempt ${retries + 1}):`,
+      error
+    );
+    retries++;
+
+    if (retries === MAX_RETRIES) {
+      throw new Error(
+        `Failed after ${MAX_RETRIES} attempts. Last error: ${error.message}`
+      );
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
   }
 };
 
 const tweetExchangeRatesUGX = async () => {
+  let retries = 0;
   try {
     const [UgxtoKES, UgxtoGHS, UgxtoNGN] = await Promise.all([
       getExchangeRate("UGX", "KES"),
@@ -138,12 +166,24 @@ const tweetExchangeRatesUGX = async () => {
 
     await client.v2.tweet(tweetText);
   } catch (error) {
-    console.error("Error in tweetExchangeRatesUGX:", error);
-    throw error; // Rethrow the error to be caught by the calling function or global error handler
+    console.error(
+      `Error in tweetExchangeRatesUGX (attempt ${retries + 1}):`,
+      error
+    );
+    retries++;
+
+    if (retries === MAX_RETRIES) {
+      throw new Error(
+        `Failed after ${MAX_RETRIES} attempts. Last error: ${error.message}`
+      );
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
   }
 };
 
 const tweetExchangeRatesGHS = async () => {
+  let retries = 0;
   try {
     const [ghstoKES, ghstoUGX, ghstoNGN] = await Promise.all([
       getExchangeRate("GHS", "KES"),
@@ -165,8 +205,19 @@ const tweetExchangeRatesGHS = async () => {
 
     await client.v2.tweet(tweetText);
   } catch (error) {
-    console.error("Error in tweetExchangeRatesGHS:", error);
-    throw error; // Rethrow the error to be caught by the calling function or global error handler
+    console.error(
+      `Error in tweetExchangeRatesGHS (attempt ${retries + 1}):`,
+      error
+    );
+    retries++;
+
+    if (retries === MAX_RETRIES) {
+      throw new Error(
+        `Failed after ${MAX_RETRIES} attempts. Last error: ${error.message}`
+      );
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
   }
 };
 
