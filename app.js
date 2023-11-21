@@ -1,14 +1,16 @@
 const { TwitterApi } = require("twitter-api-v2");
 const dotenv = require("dotenv");
 const express = require("express");
-const eversendClient = require("@eversend/node-sdk")({
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-});
+
 
 const app = express();
 const port = process.env.PORT || 5000;
 dotenv.config();
+
+const eversendClient = require("@eversend/node-sdk")({
+  clientId: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
+});
 
 const client = new TwitterApi({
   appKey: process.env.CONSUMER_KEY,
@@ -60,8 +62,9 @@ const getExchangeRate = async (fromCurrency, toCurrency) => {
   }
 };
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const tweetExchangeRates = async (baseCurrency, currencyArray) => {
-  let errorOccurred = false;
   try {
     // Check if baseCurrency is in currencyArray, remove it if present
     const index = currencyArray.indexOf(baseCurrency);
@@ -78,21 +81,11 @@ const tweetExchangeRates = async (baseCurrency, currencyArray) => {
           `Sub Exchange Rate when Tweeting - Error fetching quotation for ${baseCurrency} to ${currency}:`,
           error.response.data
         );
-        errorOccurred = true;
-        // Don't rethrow the error to continue processing other promises
-        return null; // Return null for the failed promise
+        throw error;
       }
     });
 
     const exchangeRates = await Promise.all(exchangeRatePromises);
-
-    // Check if any errors occurred
-    if (errorOccurred) {
-      console.warn(
-        "Errors occurred during exchange rate fetching. Skipping tweet."
-      );
-      return;
-    }
 
     const tweetText =
       `${formatDateTime()}\n` +
@@ -103,30 +96,29 @@ const tweetExchangeRates = async (baseCurrency, currencyArray) => {
               flagEmoji[currency]
             } ${currency} ${rate.destAmount.toFixed(4)}`
         )
-        .join("\n");
+        .join("\n") +
+      "\n\n#EversendExchangeRates";
 
     await client.v2.tweet(tweetText);
+
+    // Introduce a delay after each tweet
+    await sleep(5000);
   } catch (error) {
-    console.error(`Error in tweetExchangeRates${baseCurrency}:`, error);
-    throw error; // Rethrow the error to be caught by the calling function or global error handler
+    console.error(`Error in tweetExchangeRates${baseCurrency}:`, error.response.data);
+    throw error;
   }
 };
 
 // Endpoint to trigger the exchange rate tweet
 app.get("/trigger-exchange-rate-tweet", async (req, res) => {
   try {
-    const promises = [
-      tweetExchangeRates("KES", pairsArray),
-      tweetExchangeRates("NGN", pairsArray),
-      tweetExchangeRates("UGX", pairsArray),
-      tweetExchangeRates("GHS", pairsArray),
-    ];
-
-    await Promise.all(promises);
+    for (const baseCurrency of ["KES", "NGN", "UGX", "GHS"]) {
+      await tweetExchangeRates(baseCurrency, pairsArray);
+    }
 
     res.status(200).send("Exchange rate tweet triggered successfully!");
   } catch (error) {
-    console.error(error);
+    console.error(error.response.data, "Error in last async function");
     res.status(500).send("Internal Server Error");
   }
 });
