@@ -44,9 +44,6 @@ $ node index.js
 
 ```
 
-## Contribution Guidelines
-
-Contributions are welcome and encouraged. Learn more about our contribution guidelines [here](/CONTRIBUTING.md)
 ## License
 
 MIT © [Echilaka1]()
