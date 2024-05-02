@@ -12,6 +12,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: 🔎 Check IP
+        run: curl https://api.ipify.org
+
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
